@@ -1,3 +1,4 @@
 *.tmp
 cmake-build-debug
 */main
+*/*.x

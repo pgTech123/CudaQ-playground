@@ -1,17 +1,24 @@
+#include <iostream>
 #include <cudaq.h>
 #include <math.h>
 
 #define PI 3.14159265358979323846
 
-__qpu__ void kernel(int qubit_count) {
+__qpu__ void kernel(int qubit_count, int inputValue) {
   cudaq::qvector qubits(qubit_count);
+
+  for (auto i = 0; i < qubit_count; i++) {
+    if (inputValue & (0x1 << i)) {
+      x(qubits[i]);
+    }
+  }
 
   for (auto i = 0; i < qubit_count; i++) {
     double divider = static_cast<double>(1 << (i + 1));
     double angle = PI / divider;
     h(qubits[i]);
     for (auto j = i+1; j < qubit_count; j++) {
-      cr1(angle, qubits[i], qubits[j]);
+      cry(angle, qubits[i], qubits[j]);
     }
   }
 
@@ -22,8 +29,37 @@ __qpu__ void kernel(int qubit_count) {
   mz(qubits);
 }
 
+
+int generateVectorWithFrequency(int frequency, int qubit_count) {
+  int inputValue = 0;
+  for (auto i = 0; i < qubit_count; i++) {
+    if (i % frequency == 0) {
+      inputValue = inputValue | (0x1 << i);
+    }
+  }
+  return inputValue;
+}
+
 int main(int argc, char *argv[]) {
-  auto qubit_count = 1 < argc ? atoi(argv[1]) : 8;
-  auto result = cudaq::sample(10000, kernel, qubit_count);
-  result.dump();
+  auto qubit_count = 1 < argc ? atoi(argv[1]) : 20;
+  int frequency = 2 < argc ? atoi(argv[2]) : 5;
+
+  // Generate a classic input vector
+  int inputValue = generateVectorWithFrequency(frequency, qubit_count);
+
+  // Print classic input value
+  std::cout << "Classic input value:";
+  for (int i = 0; i < qubit_count; i++) {
+    std::cout << ((inputValue & (0x1 << i)) >> i);
+  }
+  std::cout << std::endl;
+
+  // Run the quantum FFT
+  auto result = cudaq::sample(10000, kernel, qubit_count, inputValue);
+
+  // Print the most likely value
+  std::cout << "Most likely: " << result.most_probable() << std::endl;
+
+  // For debugging purposes, dump every measurements.
+  //result.dump();
 }
