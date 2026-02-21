@@ -7,7 +7,7 @@ __qpu__ void kernel(int qubit_count, int inputValue) {
   cudaq::qvector qubits(qubit_count);
 
   // Prepare the initial qbit value for the operation
-  for (auto i = 0; i < qubit_count; i++) {
+  for (int i = 0; i < qubit_count; i++) {
     if (inputValue & (0x1 << i)) {
       x(qubits[i]);
     }
@@ -39,7 +39,7 @@ __qpu__ void kernel(int qubit_count, int inputValue) {
 
 int generateVectorWithFrequency(int frequency, int qubit_count) {
   int inputValue = 0;
-  for (auto i = 0; i < qubit_count; i++) {
+  for (int i = 0; i < qubit_count; i++) {
     if (i % frequency == 0) {
       inputValue = inputValue | (0x1 << i);
     }
@@ -48,7 +48,7 @@ int generateVectorWithFrequency(int frequency, int qubit_count) {
 }
 
 int main(int argc, char *argv[]) {
-  auto qubit_count = 4;
+  int qubit_count = 4;
   int frequency = 2;
   // Prepare a classic input vector
   int inputValue = generateVectorWithFrequency(frequency, qubit_count);

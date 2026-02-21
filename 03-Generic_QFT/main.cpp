@@ -4,35 +4,46 @@
 
 #define PI 3.14159265358979323846
 
+
+__qpu__ void prepareStateFromClassic(int inputValue, cudaq::qview<> qubits) {
+	int qubit_count = qubits.size();
+	for (int i = 0; i < qubit_count; i++) {
+		if (inputValue & (0x1 << i)) {
+			x(qubits[i]);
+		}
+	}
+}
+
+__qpu__ void qft(cudaq::qview<> qubits) {
+    int qubit_count = qubits.size();
+  	for (int i = 0; i < qubit_count; i++) {
+    	double divider = static_cast<double>(1 << (i + 1));
+    	double angle = PI / divider;
+    	h(qubits[i]);
+    	for (int j = i+1; j < qubit_count; j++) {
+    		cry(angle, qubits[i], qubits[j]);
+    	}
+  	}
+
+  	for (int i = 0; i < qubit_count/2; i++) {
+    	swap(qubits[i], qubits[qubit_count-i-1]);
+  	}
+}
+
+// Main kernel
 __qpu__ void kernel(int qubit_count, int inputValue) {
   cudaq::qvector qubits(qubit_count);
 
-  for (auto i = 0; i < qubit_count; i++) {
-    if (inputValue & (0x1 << i)) {
-      x(qubits[i]);
-    }
-  }
-
-  for (auto i = 0; i < qubit_count; i++) {
-    double divider = static_cast<double>(1 << (i + 1));
-    double angle = PI / divider;
-    h(qubits[i]);
-    for (auto j = i+1; j < qubit_count; j++) {
-      cry(angle, qubits[i], qubits[j]);
-    }
-  }
-
-  for (auto i = 0; i < qubit_count/2; i++) {
-    swap(qubits[i], qubits[qubit_count-i-1]);
-  }
+  prepareStateFromClassic(inputValue, qubits);
+  qft(qubits);
 
   mz(qubits);
 }
 
-
+// Classic functions
 int generateVectorWithFrequency(int frequency, int qubit_count) {
   int inputValue = 0;
-  for (auto i = 0; i < qubit_count; i++) {
+  for (int i = 0; i < qubit_count; i++) {
     if (i % frequency == 0) {
       inputValue = inputValue | (0x1 << i);
     }
@@ -41,7 +52,7 @@ int generateVectorWithFrequency(int frequency, int qubit_count) {
 }
 
 int main(int argc, char *argv[]) {
-  auto qubit_count = 1 < argc ? atoi(argv[1]) : 20;
+  int qubit_count = 1 < argc ? atoi(argv[1]) : 20;
   int frequency = 2 < argc ? atoi(argv[2]) : 5;
 
   // Generate a classic input vector

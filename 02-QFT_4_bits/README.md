@@ -2,9 +2,10 @@
 
 ## Goal: Implement a 4 bit QFT
 
-
-
-
+### Sub-goals: 
+* Prepare a classical input value to for a quantum program
+* Output the most likely answer to the problem
+* Familiarize with quantum operations - [Quantum operations](https://nvidia.github.io/cuda-quantum/latest/api/default_ops.html)
 
 ### With Nvidia GPU
 ```
