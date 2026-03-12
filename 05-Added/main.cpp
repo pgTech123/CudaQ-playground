@@ -46,11 +46,6 @@ __qpu__ void iqft(cudaq::qview<> qubits) {
   	}
 }
 
-__qpu__ void adder(cudaq::qview<> qubits) {
-
-
-}
-
 // Main kernel
 __qpu__ void kernel(int qubit_count, int inputValue) {
 	cudaq::qvector qubits(qubit_count);
