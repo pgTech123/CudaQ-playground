@@ -20,7 +20,7 @@ __qpu__ void qft(cudaq::qview<> qubits) {
     	double angle = PI / divider;
     	h(qubits[i]);
     	for (int j = i+1; j < qubit_count; j++) {
-    		cry(angle, qubits[i], qubits[j]);
+    		crz(angle, qubits[i], qubits[j]);
     	}
   	}
 
